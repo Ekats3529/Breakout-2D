@@ -12,6 +12,26 @@ var paddleX = (canvas.width-paddleWidth)/2;
 var rightPressed = false;
 var leftPressed = false;
 
+
+const brickRowCount = 4;
+const brickColumnCount = 8;
+const brickWidth = 75;
+const brickHeight = 20;
+const brickPadding = 10;
+const brickOffsetTop = 30;
+const brickOffsetLeft = 30;
+
+var life_count = 3;
+
+
+const bricks = [];
+for (let c = 0; c < brickColumnCount; c++) {
+  bricks[c] = [];
+  for (let r = 0; r < brickRowCount; r++) {
+    bricks[c][r] = { x: 0, y: 0 };
+  }
+}
+
 document.addEventListener("keydown", keyDownHandler, false);
 document.addEventListener("keyup", keyUpHandler, false);
 
@@ -50,17 +70,51 @@ function drawPaddle() {
     ctx.closePath();
 }
 
+function drawBricks() {
+    for (let c = 0; c < brickColumnCount; c++) {
+      for (let r = 0; r < brickRowCount; r++) {
+        const brickX = c * (brickWidth + brickPadding) + brickOffsetLeft;
+        const brickY = r * (brickHeight + brickPadding) + brickOffsetTop;
+        bricks[c][r].x = brickX;
+        bricks[c][r].y = brickY;
+        ctx.beginPath();
+        ctx.rect(brickX, brickY, brickWidth, brickHeight);
+        ctx.fillStyle = "#4682B4";
+        ctx.fill();
+        ctx.closePath();
+      }
+    }
+  }
+
 function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+    drawBricks();
     drawBall();
     drawPaddle();
+    
 
     if(x + dx > canvas.width-ballRadius || x + dx < ballRadius) {
         dx = -dx;
     }
-    if(y + dy > canvas.height-ballRadius || y + dy < ballRadius) {
+    if(y + dy < ballRadius + paddleHeight) {
         dy = -dy;
     }
+
+    else if(y + dy > canvas.height-ballRadius - paddleHeight / 2) {
+        if(x > paddleX - paddleWidth / 3 && x < paddleX + paddleWidth + paddleWidth/3) {
+            dy = -dy;
+        }
+        else {
+            life_count -= 1;
+        }
+        if (life_count == 0){
+            life_count = 3;
+            clearInterval(game);
+            alert("GAME OVER");
+            document.location.reload();
+        }
+    }
+    
 
     if(rightPressed && paddleX < canvas.width-paddleWidth) {
         paddleX += 7;
@@ -72,4 +126,4 @@ function draw() {
     x += dx;
     y += dy;
 }  
-setInterval(draw, 10);
+var game = setInterval(draw, 10);
